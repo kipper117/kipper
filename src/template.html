@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>복리 투자 시뮬레이터</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+/*STYLES*/
+</style>
+</head>
+<body data-theme="dark">
+  <header class="app-header">
+    <h1>복리 투자 시뮬레이터</h1>
+    <button id="theme-toggle" type="button">다크 / 라이트</button>
+  </header>
+
+  <button id="input-panel-toggle" class="mobile-only" type="button">입력값 열기</button>
+
+  <div class="app-layout">
+    <aside id="input-panel" class="input-panel">
+      <div class="field">
+        <label for="initialInvestment">초기 투자금 (만원)</label>
+        <input type="range" id="initialInvestment-range" min="0" max="100000" step="10">
+        <input type="number" id="initialInvestment" min="0" step="10">
+      </div>
+      <div class="field">
+        <label for="contributionAmount">정기 납입액 (만원)</label>
+        <input type="range" id="contributionAmount-range" min="0" max="1000" step="1">
+        <input type="number" id="contributionAmount" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="contributionFrequency">납입 주기</label>
+        <select id="contributionFrequency">
+          <option value="monthly">매월</option>
+          <option value="quarterly">분기</option>
+          <option value="yearly">매년</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="contributionGrowthRate">납입액 연 증가율 (%)</label>
+        <input type="range" id="contributionGrowthRate-range" min="0" max="20" step="0.5">
+        <input type="number" id="contributionGrowthRate" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label for="contributionStopYear">납입 중단 연차 (0=중단 없음)</label>
+        <input type="number" id="contributionStopYear" min="0" step="1" value="0">
+      </div>
+      <div class="field">
+        <label for="annualRate">연 수익률 (%)</label>
+        <input type="range" id="annualRate-range" min="-20" max="30" step="0.1">
+        <input type="number" id="annualRate" step="0.1">
+      </div>
+      <div class="field">
+        <label for="compoundingFrequency">복리 주기</label>
+        <select id="compoundingFrequency">
+          <option value="monthly">월복리</option>
+          <option value="yearly">연복리</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="years">투자 기간 (년)</label>
+        <input type="range" id="years-range" min="1" max="50" step="1">
+        <input type="number" id="years" min="1" step="1">
+      </div>
+      <div class="field">
+        <label for="inflationRate">물가상승률 (%)</label>
+        <input type="range" id="inflationRate-range" min="0" max="10" step="0.1">
+        <input type="number" id="inflationRate" min="0" step="0.1">
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="showReal"> 실질 가치로 보기</label>
+      </div>
+    </aside>
+
+    <main class="results">
+      <section class="summary-cards" id="summary-cards"></section>
+      <section class="chart-section">
+        <canvas id="asset-chart" height="120"></canvas>
+      </section>
+      <section class="chart-section">
+        <canvas id="ratio-chart" height="120"></canvas>
+      </section>
+      <section class="table-section">
+        <table id="schedule-table">
+          <thead>
+            <tr>
+              <th>연도</th><th>수익률(%)</th><th>납입액</th><th>수익금</th><th>누적 원금</th><th>누적 수익</th><th>총자산</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+<script>
+/*CALC_JS*/
+</script>
+<script>
+/*UI_JS*/
+</script>
+</body>
+</html>
