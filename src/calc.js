@@ -10,6 +10,8 @@
       initialInvestment,
       contributionAmount = 0,
       contributionFrequency = 'monthly',
+      contributionGrowthRate = 0,
+      contributionStopYear = null,
       annualRate,
       compoundingFrequency,
       years
@@ -26,10 +28,15 @@
       const yearStartBalance = balance;
       let yearContribution = 0;
 
+      const contributionActive = contributionStopYear == null || year <= contributionStopYear;
+      const currentContribution = contributionActive
+        ? contributionAmount * Math.pow(1 + contributionGrowthRate, year - 1)
+        : 0;
+
       for (let month = 1; month <= 12; month++) {
         let monthContribution = 0;
-        if (contributionAmount > 0 && month % contributionMonths === 0) {
-          monthContribution = contributionAmount;
+        if (currentContribution > 0 && month % contributionMonths === 0) {
+          monthContribution = currentContribution;
           yearContribution += monthContribution;
           cumulativePrincipal += monthContribution;
         }

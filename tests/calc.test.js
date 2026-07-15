@@ -52,3 +52,31 @@ test('분기 납입: 1년간 4회만 납입된다', () => {
   });
   assert.equal(rows[0].contribution, 1200000);
 });
+
+test('납입액 연 증가율: 2년차 납입액이 증가율만큼 커진다', () => {
+  const rows = generateSchedule({
+    initialInvestment: 0,
+    contributionAmount: 100000,
+    contributionFrequency: 'yearly',
+    contributionGrowthRate: 0.1,
+    annualRate: 0,
+    compoundingFrequency: 'yearly',
+    years: 2
+  });
+  assert.equal(rows[0].contribution, 100000);
+  assert.ok(Math.abs(rows[1].contribution - 110000) < 1);
+});
+
+test('납입 중단 연차 이후에는 납입이 발생하지 않는다', () => {
+  const rows = generateSchedule({
+    initialInvestment: 0,
+    contributionAmount: 100000,
+    contributionFrequency: 'yearly',
+    contributionStopYear: 1,
+    annualRate: 0,
+    compoundingFrequency: 'yearly',
+    years: 2
+  });
+  assert.equal(rows[0].contribution, 100000);
+  assert.equal(rows[1].contribution, 0);
+});
