@@ -94,3 +94,19 @@ test('연도별 수익률 오버라이드가 지정된 해에만 적용된다', 
   assert.equal(rows[0].rate, 0.05);
   assert.equal(rows[1].rate, 0.2);
 });
+
+test('월복리에서도 연도별 수익률 오버라이드가 해당 연도에만 적용된다', () => {
+  const rows = generateSchedule({
+    initialInvestment: 1000,
+    annualRate: 0.12,
+    compoundingFrequency: 'monthly',
+    years: 2,
+    rateOverrides: { 2: 0.24 }
+  });
+  const expectedYear1 = 1000 * Math.pow(1 + 0.12 / 12, 12);
+  const expectedYear2 = expectedYear1 * Math.pow(1 + 0.24 / 12, 12);
+  assert.ok(Math.abs(rows[0].totalAsset - expectedYear1) < 0.01);
+  assert.ok(Math.abs(rows[1].totalAsset - expectedYear2) < 0.01);
+  assert.equal(rows[0].rate, 0.12);
+  assert.equal(rows[1].rate, 0.24);
+});
