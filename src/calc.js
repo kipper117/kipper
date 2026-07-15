@@ -14,7 +14,8 @@
       contributionStopYear = null,
       annualRate,
       compoundingFrequency,
-      years
+      years,
+      rateOverrides = {}
     } = params;
 
     const contributionMonths = { monthly: 1, quarterly: 3, yearly: 12 }[contributionFrequency];
@@ -24,7 +25,8 @@
     let cumulativeProfit = 0;
 
     for (let year = 1; year <= years; year++) {
-      const monthlyRate = annualRate / 12;
+      const rate = rateOverrides[year] !== undefined ? rateOverrides[year] : annualRate;
+      const monthlyRate = rate / 12;
       const yearStartBalance = balance;
       let yearContribution = 0;
 
@@ -48,7 +50,7 @@
       }
 
       if (compoundingFrequency === 'yearly') {
-        balance += balance * annualRate;
+        balance += balance * rate;
       }
 
       const yearProfit = balance - yearStartBalance - yearContribution;
@@ -56,6 +58,7 @@
 
       rows.push({
         year,
+        rate,
         contribution: yearContribution,
         profit: yearProfit,
         cumulativePrincipal,

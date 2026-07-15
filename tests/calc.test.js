@@ -80,3 +80,17 @@ test('납입 중단 연차 이후에는 납입이 발생하지 않는다', () =>
   assert.equal(rows[0].contribution, 100000);
   assert.equal(rows[1].contribution, 0);
 });
+
+test('연도별 수익률 오버라이드가 지정된 해에만 적용된다', () => {
+  const rows = generateSchedule({
+    initialInvestment: 1000,
+    annualRate: 0.05,
+    compoundingFrequency: 'yearly',
+    years: 2,
+    rateOverrides: { 2: 0.2 }
+  });
+  assert.ok(Math.abs(rows[0].totalAsset - 1050) < 0.01);
+  assert.ok(Math.abs(rows[1].totalAsset - 1260) < 0.01);
+  assert.equal(rows[0].rate, 0.05);
+  assert.equal(rows[1].rate, 0.2);
+});
