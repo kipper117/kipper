@@ -177,49 +177,115 @@
     return null;
   }
 
-  function renderGoalRace(baseYears, boostedYears, boostWon, baseContribution) {
+  const CONTRIBUTION_PERIODS_PER_MONTH_BOOST = { monthly: 1, quarterly: 3, yearly: 12 };
+
+  function renderGoalRace(baseYears, boostedYears, boostPeriodWon, baseContribution, monthlyBoostWon) {
     const el = document.getElementById('goal-race');
     if (!baseYears && !boostedYears) {
       el.innerHTML = '';
       return;
     }
 
-    const raceMax = Math.max(baseYears || 100, boostedYears || 100, 1);
-    const baseDuration = baseYears ? Math.max(0.4, 2 * (baseYears / raceMax)) : 2;
-    const boostDuration = boostedYears ? Math.max(0.4, 2 * (boostedYears / raceMax)) : 2;
+    const raceMax = Math.max(baseYears || 1, boostedYears || 1, 1);
+    const speedSeconds = 2;
+
+    function lanePercent(years) {
+      return years ? Math.min(100, (years / raceMax) * 100) : 100;
+    }
+    function laneDuration(years) {
+      return years ? Math.max(0.3, (years / raceMax) * speedSeconds) : speedSeconds;
+    }
+
+    const basePct = lanePercent(baseYears);
+    const boostPct = lanePercent(boostedYears);
 
     el.innerHTML =
       '<div class="race-lane">' +
         '<div class="race-label">현재 납입액 (' + manwonLabel(baseContribution) + ') — ' + (baseYears ? baseYears + '년' : '100년 이내 미도달') + '</div>' +
-        '<div class="race-track"><div class="race-marker" id="race-marker-base" style="transition-duration:' + baseDuration + 's"></div></div>' +
+        '<div class="race-track">' +
+          '<div class="race-marker" id="race-marker-base" style="transition-duration:' + laneDuration(baseYears) + 's"></div>' +
+          '<div class="race-year-tag" id="race-tag-base" style="transition-duration:' + laneDuration(baseYears) + 's">' + (baseYears || '-') + '년</div>' +
+        '</div>' +
       '</div>' +
       '<div class="race-lane boost">' +
-        '<div class="race-label">납입액 +' + (boostWon / 10000) + '만원 (' + manwonLabel(baseContribution + boostWon) + ') — ' + (boostedYears ? boostedYears + '년' : '100년 이내 미도달') + '</div>' +
-        '<div class="race-track"><div class="race-marker" id="race-marker-boost" style="transition-duration:' + boostDuration + 's"></div></div>' +
-      '</div>';
+        '<div class="race-label">월 ' + (monthlyBoostWon / 10000) + '만원 추가 납입 (' + manwonLabel(baseContribution + boostPeriodWon) + ') — ' + (boostedYears ? boostedYears + '년' : '100년 이내 미도달') + '</div>' +
+        '<div class="race-track">' +
+          '<div class="race-marker" id="race-marker-boost" style="transition-duration:' + laneDuration(boostedYears) + 's"></div>' +
+          '<div class="race-year-tag" id="race-tag-boost" style="transition-duration:' + laneDuration(boostedYears) + 's">' + (boostedYears || '-') + '년</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="race-scale"><span>0년</span><span>' + raceMax + '년</span></div>';
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (baseYears) document.getElementById('race-marker-base').classList.add('go');
-        if (boostedYears) document.getElementById('race-marker-boost').classList.add('go');
+        const markerBase = document.getElementById('race-marker-base');
+        const tagBase = document.getElementById('race-tag-base');
+        const markerBoost = document.getElementById('race-marker-boost');
+        const tagBoost = document.getElementById('race-tag-boost');
+        if (markerBase) { markerBase.style.left = 'calc(' + basePct + '% - 8px)'; tagBase.style.left = 'calc(' + basePct + '% - 12px)'; }
+        if (markerBoost) { markerBoost.style.left = 'calc(' + boostPct + '% - 8px)'; tagBoost.style.left = 'calc(' + boostPct + '% - 12px)'; }
       });
     });
+  }
+
+  // 참고용 고정 가격 (실시간 웹 조회가 아닌, 대략적인 평균값 — 필요시 직접 수정하세요)
+  const MONEY_ITEMS = [
+    { name: '배달 음식 1회', price: 25000, verb: '안 시키면 돼요' },
+    { name: '아메리카노 1잔', price: 4500, verb: '안 마시면 돼요' },
+    { name: '옷 한 벌', price: 50000, verb: '안 사면 돼요' },
+    { name: '넷플릭스 1개월 구독', price: 13500, verb: '해지하면 돼요' },
+    { name: '헬스장 한 달 이용권', price: 70000, verb: '끊으면 돼요' }
+  ];
+  const BIG_GOALS = [
+    { name: '유럽 여행', price: 4000000 },
+    { name: '노트북 새로 사기', price: 1500000 },
+    { name: '명품 가방', price: 2000000 }
+  ];
+
+  function renderMoneyEquivalents(monthlyBoostWon) {
+    const el = document.getElementById('money-equiv');
+    if (!monthlyBoostWon) {
+      el.innerHTML = '';
+      return;
+    }
+
+    const itemLines = MONEY_ITEMS
+      .map((item) => ({ item, count: Math.round(monthlyBoostWon / item.price) }))
+      .filter((x) => x.count >= 1 && x.count <= 30)
+      .sort((a, b) => Math.abs(a.count - 5) - Math.abs(b.count - 5))
+      .slice(0, 2);
+
+    const bigGoal = BIG_GOALS
+      .map((g) => ({ g, months: Math.ceil(g.price / monthlyBoostWon) }))
+      .filter((x) => x.months >= 1 && x.months <= 60)
+      .sort((a, b) => a.months - b.months)[0];
+
+    let html = '<div class="label">월 ' + (monthlyBoostWon / 10000) + '만원, 이렇게 아낄 수 있어요</div><ul>';
+    itemLines.forEach(({ item, count }) => {
+      html += '<li>' + item.name + ' ' + count + '번 ' + item.verb + '</li>';
+    });
+    if (bigGoal) {
+      html += '<li>' + bigGoal.months + '개월 모으면 ' + bigGoal.g.name + ' (' + Math.round(bigGoal.g.price / 10000) + '만원) 갈 수 있어요</li>';
+    }
+    html += '</ul>';
+    el.innerHTML = html;
   }
 
   document.getElementById('goal-calculate').addEventListener('click', () => {
     const inputs = readInputs();
     const goalWon = Number(document.getElementById('goalAmount').value) * 100000000;
-    const boostWon = Number(document.getElementById('contributionBoost').value) * 10000;
+    const monthlyBoostWon = Number(document.getElementById('contributionBoost').value) * 10000;
+    const boostPeriodWon = monthlyBoostWon * CONTRIBUTION_PERIODS_PER_MONTH_BOOST[inputs.contributionFrequency];
     const showReal = document.getElementById('showReal').checked;
 
     const baseYears = findYearsToGoal(inputs, inputs.contributionAmount, goalWon, showReal);
-    const boostedYears = findYearsToGoal(inputs, inputs.contributionAmount + boostWon, goalWon, showReal);
+    const boostedYears = findYearsToGoal(inputs, inputs.contributionAmount + boostPeriodWon, goalWon, showReal);
 
     const resultEl = document.getElementById('goal-result');
     if (baseYears) {
       resultEl.textContent = '목표 금액 도달까지 약 ' + baseYears + '년이 걸립니다.';
       if (boostedYears && boostedYears < baseYears) {
-        resultEl.textContent += ' 납입액을 ' + (boostWon / 10000) + '만원 늘리면 ' + boostedYears + '년으로 ' + (baseYears - boostedYears) + '년 단축됩니다.';
+        resultEl.textContent += ' 매달 ' + (monthlyBoostWon / 10000) + '만원 더 넣으면 ' + boostedYears + '년으로 ' + (baseYears - boostedYears) + '년 단축됩니다.';
       } else if (boostedYears && boostedYears === baseYears) {
         resultEl.textContent += ' 납입액을 늘려도 도달 기간은 동일합니다.';
       }
@@ -227,7 +293,8 @@
       resultEl.textContent = '100년 이내에는 목표 금액에 도달하지 못합니다. 조건을 조정해 보세요.';
     }
 
-    renderGoalRace(baseYears, boostedYears, boostWon, inputs.contributionAmount);
+    renderGoalRace(baseYears, boostedYears, boostPeriodWon, inputs.contributionAmount, monthlyBoostWon);
+    renderMoneyEquivalents(monthlyBoostWon);
   });
 
   recalculate();
