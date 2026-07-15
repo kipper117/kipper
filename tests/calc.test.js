@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { generateSchedule } = require('../src/calc.js');
+const { generateSchedule, summarize } = require('../src/calc.js');
 
 test('연복리, 납입 없음: 10% 수익률로 2년 후 자산', () => {
   const rows = generateSchedule({
@@ -109,4 +109,37 @@ test('월복리에서도 연도별 수익률 오버라이드가 해당 연도에
   assert.ok(Math.abs(rows[1].totalAsset - expectedYear2) < 0.01);
   assert.equal(rows[0].rate, 0.12);
   assert.equal(rows[1].rate, 0.24);
+});
+
+test('물가상승률 반영: 실질 자산은 명목 자산을 (1+물가)^연차로 나눈 값', () => {
+  const rows = generateSchedule({
+    initialInvestment: 1000000,
+    annualRate: 0.02,
+    compoundingFrequency: 'yearly',
+    years: 1,
+    inflationRate: 0.02
+  });
+  assert.ok(Math.abs(rows[0].totalAsset - 1020000) < 1);
+  assert.ok(Math.abs(rows[0].realTotalAsset - 1000000) < 1);
+});
+
+test('summarize: 마지막 연도 값을 요약한다', () => {
+  const rows = generateSchedule({
+    initialInvestment: 1000000,
+    contributionAmount: 100000,
+    contributionFrequency: 'yearly',
+    annualRate: 0.1,
+    compoundingFrequency: 'yearly',
+    years: 2
+  });
+  const summary = summarize(rows);
+  assert.equal(summary.finalAsset, rows[1].totalAsset);
+  assert.equal(summary.totalPrincipal, rows[1].cumulativePrincipal);
+  assert.equal(summary.totalProfit, rows[1].cumulativeProfit);
+  assert.equal(summary.realFinalAsset, rows[1].realTotalAsset);
+});
+
+test('summarize: 빈 스케줄은 0 값을 반환한다', () => {
+  const summary = summarize([]);
+  assert.deepEqual(summary, { finalAsset: 0, realFinalAsset: 0, totalPrincipal: 0, totalProfit: 0 });
 });

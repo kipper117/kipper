@@ -15,6 +15,7 @@
       annualRate,
       compoundingFrequency,
       years,
+      inflationRate = 0,
       rateOverrides = {}
     } = params;
 
@@ -56,6 +57,8 @@
       const yearProfit = balance - yearStartBalance - yearContribution;
       cumulativeProfit += yearProfit;
 
+      const inflationFactor = Math.pow(1 + inflationRate, year);
+
       rows.push({
         year,
         rate,
@@ -63,12 +66,26 @@
         profit: yearProfit,
         cumulativePrincipal,
         cumulativeProfit,
-        totalAsset: balance
+        totalAsset: balance,
+        realTotalAsset: balance / inflationFactor
       });
     }
 
     return rows;
   }
 
-  return { generateSchedule };
+  function summarize(schedule) {
+    if (schedule.length === 0) {
+      return { finalAsset: 0, realFinalAsset: 0, totalPrincipal: 0, totalProfit: 0 };
+    }
+    const last = schedule[schedule.length - 1];
+    return {
+      finalAsset: last.totalAsset,
+      realFinalAsset: last.realTotalAsset,
+      totalPrincipal: last.cumulativePrincipal,
+      totalProfit: last.cumulativeProfit
+    };
+  }
+
+  return { generateSchedule, summarize };
 });
