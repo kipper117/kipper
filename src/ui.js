@@ -77,6 +77,32 @@
     }
   }
 
+  function renderTable(schedule) {
+    const tbody = document.querySelector('#schedule-table tbody');
+    tbody.innerHTML = schedule.map((r) =>
+      '<tr data-year="' + r.year + '">' +
+        '<td>' + r.year + '</td>' +
+        '<td data-editable="rate" contenteditable="true">' + (r.rate * 100).toFixed(1) + '</td>' +
+        '<td>' + manwon(r.contribution) + '</td>' +
+        '<td>' + manwon(r.profit) + '</td>' +
+        '<td>' + manwon(r.cumulativePrincipal) + '</td>' +
+        '<td>' + manwon(r.cumulativeProfit) + '</td>' +
+        '<td>' + manwon(r.totalAsset) + '</td>' +
+      '</tr>'
+    ).join('');
+
+    tbody.querySelectorAll('td[data-editable="rate"]').forEach((cell) => {
+      cell.addEventListener('blur', () => {
+        const year = Number(cell.closest('tr').dataset.year);
+        const value = Number(cell.textContent);
+        if (!Number.isNaN(value)) {
+          rateOverrides[year] = value / 100;
+          recalculate();
+        }
+      });
+    });
+  }
+
   function recalculate() {
     const inputs = readInputs();
     const schedule = CompoundCalc.generateSchedule(inputs);
@@ -85,6 +111,7 @@
     renderSummary(summary, showReal);
     renderAssetChart(schedule, showReal);
     renderRatioChart(summary);
+    renderTable(schedule);
   }
 
   syncedIds.forEach(syncPair);
