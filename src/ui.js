@@ -1,5 +1,5 @@
 (function () {
-  const manwon = (v) => Math.round(v / 10000).toLocaleString('ko-KR');
+  const eok = (v) => (v / 100000000).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const syncedIds = [
     'initialInvestment', 'contributionAmount', 'contributionGrowthRate',
@@ -36,9 +36,9 @@
     const el = document.getElementById('summary-cards');
     const finalAsset = showReal ? summary.realFinalAsset : summary.finalAsset;
     el.innerHTML =
-      '<div class="summary-card"><div class="label">최종 자산</div><div>' + manwon(finalAsset) + '만원</div></div>' +
-      '<div class="summary-card"><div class="label">누적 원금</div><div>' + manwon(summary.totalPrincipal) + '만원</div></div>' +
-      '<div class="summary-card"><div class="label">누적 수익</div><div>' + manwon(summary.totalProfit) + '만원</div></div>';
+      '<div class="summary-card"><div class="label">최종 자산</div><div>' + eok(finalAsset) + '억원</div></div>' +
+      '<div class="summary-card"><div class="label">누적 원금</div><div>' + eok(summary.totalPrincipal) + '억원</div></div>' +
+      '<div class="summary-card"><div class="label">누적 수익</div><div>' + eok(summary.totalProfit) + '억원</div></div>';
   }
 
   function renderAssetChart(schedule, showReal) {
@@ -46,8 +46,8 @@
     const data = {
       labels: schedule.map((r) => r.year + '년'),
       datasets: [{
-        label: showReal ? '실질 총자산 (만원)' : '총자산 (만원)',
-        data: schedule.map((r) => Math.round((showReal ? r.realTotalAsset : r.totalAsset) / 10000)),
+        label: showReal ? '실질 총자산 (억원)' : '총자산 (억원)',
+        data: schedule.map((r) => Number(((showReal ? r.realTotalAsset : r.totalAsset) / 100000000).toFixed(2))),
         borderColor: '#3b82f6',
         fill: false
       }]
@@ -65,7 +65,7 @@
     const data = {
       labels: ['누적 원금', '누적 수익'],
       datasets: [{
-        data: [Math.round(summary.totalPrincipal / 10000), Math.round(summary.totalProfit / 10000)],
+        data: [Number((summary.totalPrincipal / 100000000).toFixed(2)), Number((summary.totalProfit / 100000000).toFixed(2))],
         backgroundColor: ['#3b82f6', '#22c55e']
       }]
     };
@@ -83,11 +83,11 @@
       '<tr data-year="' + r.year + '">' +
         '<td>' + r.year + '</td>' +
         '<td data-editable="rate" contenteditable="true">' + (r.rate * 100).toFixed(1) + '</td>' +
-        '<td>' + manwon(r.contribution) + '</td>' +
-        '<td>' + manwon(r.profit) + '</td>' +
-        '<td>' + manwon(r.cumulativePrincipal) + '</td>' +
-        '<td>' + manwon(r.cumulativeProfit) + '</td>' +
-        '<td>' + manwon(r.totalAsset) + '</td>' +
+        '<td>' + eok(r.contribution) + '</td>' +
+        '<td>' + eok(r.profit) + '</td>' +
+        '<td>' + eok(r.cumulativePrincipal) + '</td>' +
+        '<td>' + eok(r.cumulativeProfit) + '</td>' +
+        '<td>' + eok(r.totalAsset) + '</td>' +
       '</tr>'
     ).join('');
 
