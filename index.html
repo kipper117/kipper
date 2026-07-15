@@ -302,6 +302,8 @@ body {
   ];
 
   let rateOverrides = {};
+  let assetChart = null;
+  let ratioChart = null;
 
   function syncPair(id) {
     const range = document.getElementById(id + '-range');
@@ -334,12 +336,50 @@ body {
       '<div class="summary-card"><div class="label">누적 수익</div><div>' + manwon(summary.totalProfit) + '만원</div></div>';
   }
 
+  function renderAssetChart(schedule, showReal) {
+    const ctx = document.getElementById('asset-chart');
+    const data = {
+      labels: schedule.map((r) => r.year + '년'),
+      datasets: [{
+        label: showReal ? '실질 총자산 (만원)' : '총자산 (만원)',
+        data: schedule.map((r) => Math.round((showReal ? r.realTotalAsset : r.totalAsset) / 10000)),
+        borderColor: '#3b82f6',
+        fill: false
+      }]
+    };
+    if (assetChart) {
+      assetChart.data = data;
+      assetChart.update();
+    } else {
+      assetChart = new Chart(ctx, { type: 'line', data });
+    }
+  }
+
+  function renderRatioChart(summary) {
+    const ctx = document.getElementById('ratio-chart');
+    const data = {
+      labels: ['누적 원금', '누적 수익'],
+      datasets: [{
+        data: [Math.round(summary.totalPrincipal / 10000), Math.round(summary.totalProfit / 10000)],
+        backgroundColor: ['#3b82f6', '#22c55e']
+      }]
+    };
+    if (ratioChart) {
+      ratioChart.data = data;
+      ratioChart.update();
+    } else {
+      ratioChart = new Chart(ctx, { type: 'doughnut', data });
+    }
+  }
+
   function recalculate() {
     const inputs = readInputs();
     const schedule = CompoundCalc.generateSchedule(inputs);
     const summary = CompoundCalc.summarize(schedule);
     const showReal = document.getElementById('showReal').checked;
     renderSummary(summary, showReal);
+    renderAssetChart(schedule, showReal);
+    renderRatioChart(summary);
   }
 
   syncedIds.forEach(syncPair);
