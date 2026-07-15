@@ -230,16 +230,16 @@
 
   // 참고용 고정 가격 (실시간 웹 조회가 아닌, 대략적인 평균값 — 필요시 직접 수정하세요)
   const MONEY_ITEMS = [
-    { name: '배달 음식 1회', price: 25000, verb: '안 시키면 돼요' },
-    { name: '아메리카노 1잔', price: 4500, verb: '안 마시면 돼요' },
-    { name: '옷 한 벌', price: 50000, verb: '안 사면 돼요' },
-    { name: '넷플릭스 1개월 구독', price: 13500, verb: '해지하면 돼요' },
-    { name: '헬스장 한 달 이용권', price: 70000, verb: '끊으면 돼요' }
+    { name: '배달 음식', price: 25000, unit: '번', verb: '시킬 수 있어요' },
+    { name: '아메리카노', price: 4500, unit: '잔', verb: '마실 수 있어요' },
+    { name: '옷', price: 50000, unit: '벌', verb: '살 수 있어요' },
+    { name: '넷플릭스', price: 13500, unit: '개월', verb: '구독할 수 있어요' },
+    { name: '헬스장', price: 70000, unit: '개월', verb: '다닐 수 있어요' }
   ];
   const BIG_GOALS = [
-    { name: '유럽 여행', price: 4000000 },
-    { name: '노트북 새로 사기', price: 1500000 },
-    { name: '명품 가방', price: 2000000 }
+    { name: '유럽 여행', price: 4000000, verb: '갈 수 있어요' },
+    { name: '노트북', price: 1500000, verb: '살 수 있어요' },
+    { name: '명품 가방', price: 2000000, verb: '살 수 있어요' }
   ];
 
   function renderMoneyEquivalents(monthlyBoostWon) {
@@ -251,21 +251,19 @@
 
     const itemLines = MONEY_ITEMS
       .map((item) => ({ item, count: Math.round(monthlyBoostWon / item.price) }))
-      .filter((x) => x.count >= 1 && x.count <= 30)
-      .sort((a, b) => Math.abs(a.count - 5) - Math.abs(b.count - 5))
-      .slice(0, 2);
+      .filter((x) => x.count >= 1 && x.count <= 30);
 
     const bigGoal = BIG_GOALS
       .map((g) => ({ g, months: Math.ceil(g.price / monthlyBoostWon) }))
       .filter((x) => x.months >= 1 && x.months <= 60)
       .sort((a, b) => a.months - b.months)[0];
 
-    let html = '<div class="label">월 ' + (monthlyBoostWon / 10000) + '만원, 이렇게 아낄 수 있어요</div><ul>';
+    let html = '<div class="label">월 ' + (monthlyBoostWon / 10000) + '만원으로 할 수 있는 것들</div><ul>';
     itemLines.forEach(({ item, count }) => {
-      html += '<li>' + item.name + ' ' + count + '번 ' + item.verb + '</li>';
+      html += '<li>' + item.name + ' ' + count + item.unit + ' ' + item.verb + '</li>';
     });
     if (bigGoal) {
-      html += '<li>' + bigGoal.months + '개월 모으면 ' + bigGoal.g.name + ' (' + Math.round(bigGoal.g.price / 10000) + '만원) 갈 수 있어요</li>';
+      html += '<li>' + bigGoal.months + '개월 모으면 ' + bigGoal.g.name + ' (' + Math.round(bigGoal.g.price / 10000) + '만원) ' + bigGoal.g.verb + '</li>';
     }
     html += '</ul>';
     el.innerHTML = html;
