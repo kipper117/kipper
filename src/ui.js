@@ -70,6 +70,9 @@
       }]
     };
     const options = {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 1,
       plugins: {
         datalabels: {
           color: '#ffffff',
@@ -149,6 +152,40 @@
 
   document.getElementById('input-panel-toggle').addEventListener('click', () => {
     document.getElementById('input-panel').classList.toggle('open');
+  });
+
+  document.querySelectorAll('.tab-button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-button').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-simulate').hidden = btn.dataset.tab !== 'simulate';
+      document.getElementById('tab-goal').hidden = btn.dataset.tab !== 'goal';
+    });
+  });
+
+  document.getElementById('goal-calculate').addEventListener('click', () => {
+    const inputs = readInputs();
+    const goalWon = Number(document.getElementById('goalAmount').value) * 100000000;
+    const showReal = document.getElementById('showReal').checked;
+    const maxYears = 100;
+    let foundYear = null;
+
+    for (let year = 1; year <= maxYears; year++) {
+      const schedule = CompoundCalc.generateSchedule(Object.assign({}, inputs, { years: year }));
+      const last = schedule[schedule.length - 1];
+      const asset = showReal ? last.realTotalAsset : last.totalAsset;
+      if (asset >= goalWon) {
+        foundYear = year;
+        break;
+      }
+    }
+
+    const resultEl = document.getElementById('goal-result');
+    if (foundYear) {
+      resultEl.textContent = '목표 금액 도달까지 약 ' + foundYear + '년이 걸립니다.';
+    } else {
+      resultEl.textContent = maxYears + '년 이내에는 목표 금액에 도달하지 못합니다. 조건을 조정해 보세요.';
+    }
   });
 
   recalculate();

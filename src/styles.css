@@ -86,6 +86,31 @@ body {
 }
 #schedule-table td[data-editable="rate"] { cursor: text; color: var(--accent); }
 .table-hint { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 4px; }
+.tab-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+}
+.tab-button.active { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+.tab-panel { display: flex; flex-direction: column; gap: 16px; }
+.tab-panel[hidden] { display: none; }
+.chart-donut { max-width: 220px; margin: 0 auto; }
+.goal-section .field { max-width: 280px; }
+.goal-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+}
+.goal-result { margin-top: 12px; font-size: 15px; }
 .mobile-only { display: none; }
 
 @media (max-width: 720px) {
