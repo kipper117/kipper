@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portfolio Simulator</title>
+<meta name="description" content="초기 투자금, 납입액, 수익률을 입력해 복리로 자산이 어떻게 불어나는지 시뮬레이션하고, 목표 금액까지 걸리는 기간을 역산해보세요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="📈 Portfolio Simulator">
+<meta property="og:description" content="초기 투자금, 납입액, 수익률을 입력해 복리로 자산이 어떻게 불어나는지 시뮬레이션하고, 목표 금액까지 걸리는 기간을 역산해보세요.">
+<meta property="og:url" content="https://kipper117.github.io/kipper/">
+<meta property="og:image" content="https://kipper117.github.io/kipper/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="📈 Portfolio Simulator">
+<meta name="twitter:description" content="초기 투자금, 납입액, 수익률을 입력해 복리로 자산이 어떻게 불어나는지 시뮬레이션하고, 목표 금액까지 걸리는 기간을 역산해보세요.">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <style>
@@ -12,26 +21,26 @@
 </head>
 <body data-theme="dark">
   <header class="app-header">
-    <h1>Portfolio Simulator</h1>
-    <button id="theme-toggle" type="button">다크 / 라이트</button>
+    <h1>📈 Portfolio Simulator</h1>
+    <button id="theme-toggle" type="button">🌙 다크 / ☀️ 라이트</button>
   </header>
 
-  <button id="input-panel-toggle" class="mobile-only" type="button">입력값 열기</button>
+  <button id="input-panel-toggle" class="mobile-only" type="button">⚙️ 입력값 열기</button>
 
   <div class="app-layout">
     <aside id="input-panel" class="input-panel">
       <div class="field">
-        <label for="initialInvestment">초기 투자금 (만원)</label>
+        <label for="initialInvestment">💰 초기 투자금 (만원)</label>
         <input type="range" id="initialInvestment-range" min="0" max="100000" step="10">
         <input type="number" id="initialInvestment" min="0" step="10">
       </div>
       <div class="field">
-        <label for="contributionAmount">정기 납입액 (만원)</label>
+        <label for="contributionAmount">🏦 정기 납입액 (만원)</label>
         <input type="range" id="contributionAmount-range" min="0" max="1000" step="1">
         <input type="number" id="contributionAmount" min="0" step="1">
       </div>
       <div class="field">
-        <label for="contributionFrequency">납입 주기</label>
+        <label for="contributionFrequency">🔁 납입 주기</label>
         <select id="contributionFrequency">
           <option value="monthly">매월</option>
           <option value="quarterly">분기</option>
@@ -39,59 +48,61 @@
         </select>
       </div>
       <div class="field">
-        <label for="contributionGrowthRate">납입액 연 증가율 (%)</label>
+        <label for="contributionGrowthRate">📈 납입액 연 증가율 (%)</label>
         <input type="range" id="contributionGrowthRate-range" min="0" max="20" step="0.5">
         <input type="number" id="contributionGrowthRate" min="0" step="0.5">
       </div>
       <div class="field">
-        <label for="contributionStopYear">납입 중단 연차 (0=중단 없음)</label>
+        <label for="contributionStopYear">⏸️ 납입 중단 연차 (0=중단 없음)</label>
         <input type="number" id="contributionStopYear" min="0" step="1" value="0">
       </div>
       <div class="field">
-        <label for="annualRate">연 수익률 (%)</label>
+        <label for="annualRate">📊 연 수익률 (%)</label>
         <input type="range" id="annualRate-range" min="-20" max="30" step="0.1">
         <input type="number" id="annualRate" step="0.1">
       </div>
       <div class="field">
-        <label for="compoundingFrequency">복리 주기</label>
+        <label for="compoundingFrequency">🔄 복리 주기</label>
         <select id="compoundingFrequency">
           <option value="monthly">월복리</option>
           <option value="yearly">연복리</option>
         </select>
       </div>
       <div class="field">
-        <label for="years">투자 기간 (년)</label>
+        <label for="years">⏳ 투자 기간 (년)</label>
         <input type="range" id="years-range" min="1" max="50" step="1">
         <input type="number" id="years" min="1" step="1">
       </div>
       <div class="field">
-        <label for="inflationRate">물가상승률 (%)</label>
+        <label for="inflationRate">🎈 물가상승률 (%)</label>
         <input type="range" id="inflationRate-range" min="0" max="10" step="0.1">
         <input type="number" id="inflationRate" min="0" step="0.1">
       </div>
       <div class="field">
-        <label><input type="checkbox" id="showReal"> 실질 가치로 보기</label>
+        <label><input type="checkbox" id="showReal"> 🧮 실질 가치로 보기</label>
       </div>
     </aside>
 
     <main class="results">
       <div class="tabs">
-        <button class="tab-button active" data-tab="simulate" type="button">시뮬레이션</button>
-        <button class="tab-button" data-tab="goal" type="button">목표 역산</button>
+        <button class="tab-button active" data-tab="simulate" type="button">📊 시뮬레이션</button>
+        <button class="tab-button" data-tab="goal" type="button">🎯 목표 역산</button>
       </div>
 
       <div id="tab-simulate" class="tab-panel">
         <section class="summary-cards" id="summary-cards"></section>
         <section class="chart-section">
+          <p class="chart-title">📈 자산 증가 추이</p>
           <canvas id="asset-chart" height="120"></canvas>
         </section>
         <section class="chart-section">
+          <p class="chart-title">🥧 원금 대비 수익 비율</p>
           <div class="chart-donut">
             <canvas id="ratio-chart"></canvas>
           </div>
         </section>
         <section class="table-section">
-          <p class="table-hint">"수익률(%)" 셀을 클릭해 값을 직접 수정할 수 있습니다. 손실이 난 해는 음수로 입력하세요 (예: -15).</p>
+          <p class="table-hint">💡 "수익률(%)" 셀을 클릭해 값을 직접 수정할 수 있습니다. 손실이 난 해는 음수로 입력하세요 (예: -15). 셀을 비워두면 원래 수익률로 되돌아갑니다.</p>
           <table id="schedule-table">
             <thead>
               <tr>
@@ -105,16 +116,16 @@
 
       <div id="tab-goal" class="tab-panel" hidden>
         <section class="goal-section">
-          <p class="table-hint">왼쪽 입력값(초기 투자금, 납입액, 수익률 등)은 그대로 사용하고, "투자 기간" 대신 목표 금액을 입력하면 도달까지 걸리는 기간을 역산합니다.</p>
+          <p class="table-hint">💡 왼쪽 입력값(초기 투자금, 납입액, 수익률 등)은 그대로 사용하고, "투자 기간" 대신 목표 금액을 입력하면 도달까지 걸리는 기간을 역산합니다.</p>
           <div class="field">
-            <label for="goalAmount">목표 금액 (억원)</label>
+            <label for="goalAmount">🎯 목표 금액 (억원)</label>
             <input type="number" id="goalAmount" min="0" step="0.1" value="10">
           </div>
           <div class="field">
-            <label for="contributionBoost">월 납입액을 얼마나 늘려볼까요? (만원/월)</label>
+            <label for="contributionBoost">🚀 월 납입액을 얼마나 늘려볼까요? (만원/월)</label>
             <input type="number" id="contributionBoost" min="0" max="10000" step="1" value="20">
           </div>
-          <button id="goal-calculate" class="goal-button" type="button">목표까지 걸리는 기간 계산</button>
+          <button id="goal-calculate" class="goal-button" type="button">🏁 목표까지 걸리는 기간 계산</button>
           <div id="goal-result" class="goal-result"></div>
           <div id="goal-race" class="goal-race"></div>
           <div id="money-equiv" class="money-equiv-box"></div>

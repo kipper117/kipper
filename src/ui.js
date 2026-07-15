@@ -36,9 +36,9 @@
     const el = document.getElementById('summary-cards');
     const finalAsset = showReal ? summary.realFinalAsset : summary.finalAsset;
     el.innerHTML =
-      '<div class="summary-card"><div class="label">최종 자산</div><div>' + eok(finalAsset) + '억원</div></div>' +
-      '<div class="summary-card"><div class="label">누적 원금</div><div>' + eok(summary.totalPrincipal) + '억원</div></div>' +
-      '<div class="summary-card"><div class="label">누적 수익</div><div>' + eok(summary.totalProfit) + '억원</div></div>';
+      '<div class="summary-card"><div class="label">🏆 최종 자산</div><div>' + eok(finalAsset) + '억원</div></div>' +
+      '<div class="summary-card"><div class="label">🌱 누적 원금</div><div>' + eok(summary.totalPrincipal) + '억원</div></div>' +
+      '<div class="summary-card"><div class="label">✨ 누적 수익</div><div>' + eok(summary.totalProfit) + '억원</div></div>';
   }
 
   function renderAssetChart(schedule, showReal) {
@@ -106,7 +106,13 @@
     tbody.querySelectorAll('td[data-editable="rate"]').forEach((cell) => {
       cell.addEventListener('blur', () => {
         const year = Number(cell.closest('tr').dataset.year);
-        const value = Number(cell.textContent);
+        const text = cell.textContent.trim();
+        if (text === '') {
+          delete rateOverrides[year];
+          recalculate();
+          return;
+        }
+        const value = Number(text);
         if (!Number.isNaN(value)) {
           rateOverrides[year] = value / 100;
           recalculate();
@@ -200,15 +206,16 @@
     const boostPct = lanePercent(boostedYears);
 
     el.innerHTML =
+      '<p class="chart-title">🏁 목표까지의 경주</p>' +
       '<div class="race-lane">' +
-        '<div class="race-label">현재 납입액 (' + manwonLabel(baseContribution) + ') — ' + (baseYears ? baseYears + '년' : '100년 이내 미도달') + '</div>' +
+        '<div class="race-label">🐢 현재 납입액 (' + manwonLabel(baseContribution) + ') — ' + (baseYears ? baseYears + '년' : '100년 이내 미도달') + '</div>' +
         '<div class="race-track">' +
           '<div class="race-marker" id="race-marker-base" style="transition-duration:' + laneDuration(baseYears) + 's"></div>' +
           '<div class="race-year-tag" id="race-tag-base" style="transition-duration:' + laneDuration(baseYears) + 's">' + (baseYears || '-') + '년</div>' +
         '</div>' +
       '</div>' +
       '<div class="race-lane boost">' +
-        '<div class="race-label">월 ' + (monthlyBoostWon / 10000) + '만원 추가 납입 (' + manwonLabel(baseContribution + boostPeriodWon) + ') — ' + (boostedYears ? boostedYears + '년' : '100년 이내 미도달') + '</div>' +
+        '<div class="race-label">🐇 월 ' + (monthlyBoostWon / 10000) + '만원 추가 납입 (' + manwonLabel(baseContribution + boostPeriodWon) + ') — ' + (boostedYears ? boostedYears + '년' : '100년 이내 미도달') + '</div>' +
         '<div class="race-track">' +
           '<div class="race-marker" id="race-marker-boost" style="transition-duration:' + laneDuration(boostedYears) + 's"></div>' +
           '<div class="race-year-tag" id="race-tag-boost" style="transition-duration:' + laneDuration(boostedYears) + 's">' + (boostedYears || '-') + '년</div>' +
@@ -270,12 +277,12 @@
       .filter((x) => x.months >= 1 && x.months <= 60)
       .sort((a, b) => b.g.price - a.g.price)[0];
 
-    let html = '<div class="label">월 ' + (monthlyBoostWon / 10000) + '만원으로 할 수 있는 것들</div><ul>';
+    let html = '<div class="label">🛍️ 월 ' + (monthlyBoostWon / 10000) + '만원으로 할 수 있는 것들</div><ul>';
     itemLines.forEach(({ item, count }) => {
-      html += '<li>' + item.name + ' ' + count + item.unit + ' ' + item.verb + '</li>';
+      html += '<li>🔸 ' + item.name + ' ' + count + item.unit + ' ' + item.verb + '</li>';
     });
     if (bigGoal) {
-      html += '<li>' + bigGoal.months + '개월 모으면 ' + bigGoal.g.name + ' (' + Math.round(bigGoal.g.price / 10000) + '만원) ' + bigGoal.g.verb + '</li>';
+      html += '<li>⭐ ' + bigGoal.months + '개월 모으면 ' + bigGoal.g.name + ' (' + Math.round(bigGoal.g.price / 10000) + '만원) ' + bigGoal.g.verb + '</li>';
     }
     html += '</ul>';
     el.innerHTML = html;
@@ -293,14 +300,14 @@
 
     const resultEl = document.getElementById('goal-result');
     if (baseYears) {
-      resultEl.textContent = '목표 금액 도달까지 약 ' + baseYears + '년이 걸립니다.';
+      resultEl.textContent = '⏱️ 목표 금액 도달까지 약 ' + baseYears + '년이 걸립니다.';
       if (boostedYears && boostedYears < baseYears) {
-        resultEl.textContent += ' 매달 ' + (monthlyBoostWon / 10000) + '만원 더 넣으면 ' + boostedYears + '년으로 ' + (baseYears - boostedYears) + '년 단축됩니다.';
+        resultEl.textContent += ' 🚀 매달 ' + (monthlyBoostWon / 10000) + '만원 더 넣으면 ' + boostedYears + '년으로 ' + (baseYears - boostedYears) + '년 단축됩니다.';
       } else if (boostedYears && boostedYears === baseYears) {
         resultEl.textContent += ' 납입액을 늘려도 도달 기간은 동일합니다.';
       }
     } else {
-      resultEl.textContent = '100년 이내에는 목표 금액에 도달하지 못합니다. 조건을 조정해 보세요.';
+      resultEl.textContent = '⚠️ 100년 이내에는 목표 금액에 도달하지 못합니다. 조건을 조정해 보세요.';
     }
 
     renderGoalRace(baseYears, boostedYears, boostPeriodWon, inputs.contributionAmount, monthlyBoostWon);
