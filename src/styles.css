@@ -111,6 +111,30 @@ body {
   font-size: 14px;
 }
 .goal-result { margin-top: 12px; font-size: 15px; }
+.goal-race { margin-top: 20px; display: flex; flex-direction: column; gap: 18px; }
+.race-lane { max-width: 480px; }
+.race-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.race-track {
+  position: relative;
+  height: 10px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: visible;
+}
+.race-marker {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(0, -50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  transition-property: left;
+  transition-timing-function: linear;
+}
+.race-marker.go { left: calc(100% - 16px); }
+.race-lane.boost .race-marker { background: var(--accent); }
 .mobile-only { display: none; }
 
 @media (max-width: 720px) {
