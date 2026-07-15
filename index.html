@@ -48,6 +48,7 @@ body {
   padding: 16px;
   border-bottom: 1px solid var(--border);
 }
+.header-actions { display: flex; gap: 8px; }
 .app-layout {
   display: flex;
   gap: 16px;
@@ -197,7 +198,10 @@ body {
 <body data-theme="dark">
   <header class="app-header">
     <h1>📈 Portfolio Simulator</h1>
-    <button id="theme-toggle" type="button">🌙 다크 / ☀️ 라이트</button>
+    <div class="header-actions">
+      <button id="reset-button" type="button">🔄 초기화</button>
+      <button id="theme-toggle" type="button">🌙 다크 / ☀️ 라이트</button>
+    </div>
   </header>
 
   <button id="input-panel-toggle" class="mobile-only" type="button">⚙️ 입력값 열기</button>
@@ -348,6 +352,8 @@ body {
         ? contributionAmount * Math.pow(1 + contributionGrowthRate, year - 1)
         : 0;
 
+      let yearlyContributionGrowth = 0;
+
       for (let month = 1; month <= 12; month++) {
         let monthContribution = 0;
         if (currentContribution > 0 && month % contributionMonths === 0) {
@@ -357,13 +363,14 @@ body {
         }
         if (compoundingFrequency === 'monthly') {
           balance = (balance + monthContribution) * (1 + monthlyRate);
-        } else {
-          balance += monthContribution;
+        } else if (monthContribution > 0) {
+          const monthsHeld = 12 - month + 1;
+          yearlyContributionGrowth += monthContribution * Math.pow(1 + rate, monthsHeld / 12);
         }
       }
 
       if (compoundingFrequency === 'yearly') {
-        balance += balance * rate;
+        balance = yearStartBalance * (1 + rate) + yearlyContributionGrowth;
       }
 
       const yearProfit = balance - yearStartBalance - yearContribution;
@@ -527,6 +534,69 @@ body {
     });
   }
 
+  const STATE_FIELD_IDS = [
+    'initialInvestment', 'contributionAmount', 'contributionFrequency',
+    'contributionGrowthRate', 'contributionStopYear', 'annualRate',
+    'compoundingFrequency', 'years', 'inflationRate'
+  ];
+
+  function syncStateToURL() {
+    const params = new URLSearchParams();
+    STATE_FIELD_IDS.forEach((id) => {
+      params.set(id, document.getElementById(id).value);
+    });
+    params.set('showReal', document.getElementById('showReal').checked ? '1' : '0');
+    if (Object.keys(rateOverrides).length > 0) {
+      params.set('rateOverrides', JSON.stringify(rateOverrides));
+    }
+    const newUrl = window.location.pathname + '?' + params.toString();
+    window.history.replaceState(null, '', newUrl);
+  }
+
+  function loadStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    if ([...params.keys()].length === 0) return false;
+
+    STATE_FIELD_IDS.forEach((id) => {
+      if (!params.has(id)) return;
+      const el = document.getElementById(id);
+      el.value = params.get(id);
+      const range = document.getElementById(id + '-range');
+      if (range) range.value = params.get(id);
+    });
+    if (params.has('showReal')) {
+      document.getElementById('showReal').checked = params.get('showReal') === '1';
+    }
+    if (params.has('rateOverrides')) {
+      try {
+        const parsed = JSON.parse(params.get('rateOverrides'));
+        Object.keys(parsed).forEach((y) => { rateOverrides[y] = parsed[y]; });
+      } catch (e) {
+        // malformed URL state, ignore and keep no overrides
+      }
+    }
+    return true;
+  }
+
+  function applyDefaults() {
+    document.getElementById('initialInvestment').value = 1000;
+    document.getElementById('initialInvestment-range').value = 1000;
+    document.getElementById('contributionAmount').value = 50;
+    document.getElementById('contributionAmount-range').value = 50;
+    document.getElementById('contributionFrequency').value = 'monthly';
+    document.getElementById('contributionGrowthRate').value = 0;
+    document.getElementById('contributionGrowthRate-range').value = 0;
+    document.getElementById('contributionStopYear').value = 0;
+    document.getElementById('annualRate').value = 7;
+    document.getElementById('annualRate-range').value = 7;
+    document.getElementById('compoundingFrequency').value = 'monthly';
+    document.getElementById('years').value = 20;
+    document.getElementById('years-range').value = 20;
+    document.getElementById('inflationRate').value = 2;
+    document.getElementById('inflationRate-range').value = 2;
+    document.getElementById('showReal').checked = false;
+  }
+
   function recalculate() {
     const inputs = readInputs();
     const schedule = CompoundCalc.generateSchedule(inputs);
@@ -536,6 +606,7 @@ body {
     renderAssetChart(schedule, showReal);
     renderRatioChart(summary);
     renderTable(schedule);
+    syncStateToURL();
   }
 
   syncedIds.forEach(syncPair);
@@ -544,18 +615,15 @@ body {
   document.getElementById('compoundingFrequency').addEventListener('change', recalculate);
   document.getElementById('showReal').addEventListener('change', recalculate);
 
-  document.getElementById('initialInvestment').value = 1000;
-  document.getElementById('initialInvestment-range').value = 1000;
-  document.getElementById('contributionAmount').value = 50;
-  document.getElementById('contributionAmount-range').value = 50;
-  document.getElementById('contributionGrowthRate').value = 0;
-  document.getElementById('contributionGrowthRate-range').value = 0;
-  document.getElementById('annualRate').value = 7;
-  document.getElementById('annualRate-range').value = 7;
-  document.getElementById('years').value = 20;
-  document.getElementById('years-range').value = 20;
-  document.getElementById('inflationRate').value = 2;
-  document.getElementById('inflationRate-range').value = 2;
+  if (!loadStateFromURL()) {
+    applyDefaults();
+  }
+
+  document.getElementById('reset-button').addEventListener('click', () => {
+    Object.keys(rateOverrides).forEach((k) => delete rateOverrides[k]);
+    applyDefaults();
+    recalculate();
+  });
 
   document.getElementById('theme-toggle').addEventListener('click', () => {
     const body = document.body;
@@ -704,16 +772,20 @@ body {
     const baseYears = findYearsToGoal(inputs, inputs.contributionAmount, goalWon, showReal);
     const boostedYears = findYearsToGoal(inputs, inputs.contributionAmount + boostPeriodWon, goalWon, showReal);
 
+    const basisNote = showReal
+      ? ' (물가상승률을 반영한 실질 가치 기준)'
+      : ' (물가상승률 미반영, 명목 금액 기준)';
+
     const resultEl = document.getElementById('goal-result');
     if (baseYears) {
-      resultEl.textContent = '⏱️ 목표 금액 도달까지 약 ' + baseYears + '년이 걸립니다.';
+      resultEl.textContent = '⏱️ 목표 금액 도달까지 약 ' + baseYears + '년이 걸립니다.' + basisNote;
       if (boostedYears && boostedYears < baseYears) {
         resultEl.textContent += ' 🚀 매달 ' + (monthlyBoostWon / 10000) + '만원 더 넣으면 ' + boostedYears + '년으로 ' + (baseYears - boostedYears) + '년 단축됩니다.';
       } else if (boostedYears && boostedYears === baseYears) {
         resultEl.textContent += ' 납입액을 늘려도 도달 기간은 동일합니다.';
       }
     } else {
-      resultEl.textContent = '⚠️ 100년 이내에는 목표 금액에 도달하지 못합니다. 조건을 조정해 보세요.';
+      resultEl.textContent = '⚠️ 100년 이내에는 목표 금액에 도달하지 못합니다.' + basisNote + ' 조건을 조정해 보세요.';
     }
 
     renderGoalRace(baseYears, boostedYears, boostPeriodWon, inputs.contributionAmount, monthlyBoostWon);

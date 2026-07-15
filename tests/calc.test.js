@@ -143,3 +143,17 @@ test('summarize: 빈 스케줄은 0 값을 반환한다', () => {
   const summary = summarize([]);
   assert.deepEqual(summary, { finalAsset: 0, realFinalAsset: 0, totalPrincipal: 0, totalProfit: 0 });
 });
+
+test('연복리: 12월에 납입된 돈은 1개월치 이자만 받는다 (연간 전체 이자를 받지 않음)', () => {
+  const rows = generateSchedule({
+    initialInvestment: 0,
+    contributionAmount: 1200000,
+    contributionFrequency: 'yearly',
+    annualRate: 0.12,
+    compoundingFrequency: 'yearly',
+    years: 1
+  });
+  const expected = 1200000 * Math.pow(1.12, 1 / 12);
+  assert.ok(Math.abs(rows[0].totalAsset - expected) < 1);
+  assert.ok(rows[0].totalAsset < 1200000 * 1.12);
+});

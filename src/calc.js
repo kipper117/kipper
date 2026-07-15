@@ -36,6 +36,8 @@
         ? contributionAmount * Math.pow(1 + contributionGrowthRate, year - 1)
         : 0;
 
+      let yearlyContributionGrowth = 0;
+
       for (let month = 1; month <= 12; month++) {
         let monthContribution = 0;
         if (currentContribution > 0 && month % contributionMonths === 0) {
@@ -45,13 +47,14 @@
         }
         if (compoundingFrequency === 'monthly') {
           balance = (balance + monthContribution) * (1 + monthlyRate);
-        } else {
-          balance += monthContribution;
+        } else if (monthContribution > 0) {
+          const monthsHeld = 12 - month + 1;
+          yearlyContributionGrowth += monthContribution * Math.pow(1 + rate, monthsHeld / 12);
         }
       }
 
       if (compoundingFrequency === 'yearly') {
-        balance += balance * rate;
+        balance = yearStartBalance * (1 + rate) + yearlyContributionGrowth;
       }
 
       const yearProfit = balance - yearStartBalance - yearContribution;
