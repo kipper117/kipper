@@ -24,3 +24,31 @@ test('월복리, 납입 없음: 연 12% 를 월 1%로 12번 복리', () => {
   const expected = 1000000 * Math.pow(1.01, 12);
   assert.ok(Math.abs(rows[0].totalAsset - expected) < 1);
 });
+
+test('월 납입, 수익률 0%: 1년간 누적 원금과 자산이 일치', () => {
+  const rows = generateSchedule({
+    initialInvestment: 1000000,
+    contributionAmount: 100000,
+    contributionFrequency: 'monthly',
+    annualRate: 0,
+    compoundingFrequency: 'yearly',
+    years: 1
+  });
+  assert.equal(rows[0].contribution, 1200000);
+  assert.equal(rows[0].cumulativePrincipal, 2200000);
+  assert.equal(rows[0].totalAsset, 2200000);
+  assert.equal(rows[0].profit, 0);
+  assert.equal(rows[0].cumulativeProfit, 0);
+});
+
+test('분기 납입: 1년간 4회만 납입된다', () => {
+  const rows = generateSchedule({
+    initialInvestment: 0,
+    contributionAmount: 300000,
+    contributionFrequency: 'quarterly',
+    annualRate: 0,
+    compoundingFrequency: 'yearly',
+    years: 1
+  });
+  assert.equal(rows[0].contribution, 1200000);
+});

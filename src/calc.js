@@ -6,20 +6,55 @@
   }
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   function generateSchedule(params) {
-    const { initialInvestment, annualRate, compoundingFrequency, years } = params;
+    const {
+      initialInvestment,
+      contributionAmount = 0,
+      contributionFrequency = 'monthly',
+      annualRate,
+      compoundingFrequency,
+      years
+    } = params;
+
+    const contributionMonths = { monthly: 1, quarterly: 3, yearly: 12 }[contributionFrequency];
     const rows = [];
     let balance = initialInvestment;
+    let cumulativePrincipal = initialInvestment;
+    let cumulativeProfit = 0;
 
     for (let year = 1; year <= years; year++) {
-      if (compoundingFrequency === 'monthly') {
-        const monthlyRate = annualRate / 12;
-        for (let month = 1; month <= 12; month++) {
-          balance = balance * (1 + monthlyRate);
+      const monthlyRate = annualRate / 12;
+      const yearStartBalance = balance;
+      let yearContribution = 0;
+
+      for (let month = 1; month <= 12; month++) {
+        let monthContribution = 0;
+        if (contributionAmount > 0 && month % contributionMonths === 0) {
+          monthContribution = contributionAmount;
+          yearContribution += monthContribution;
+          cumulativePrincipal += monthContribution;
         }
-      } else {
-        balance = balance * (1 + annualRate);
+        if (compoundingFrequency === 'monthly') {
+          balance = (balance + monthContribution) * (1 + monthlyRate);
+        } else {
+          balance += monthContribution;
+        }
       }
-      rows.push({ year, totalAsset: balance });
+
+      if (compoundingFrequency === 'yearly') {
+        balance += balance * annualRate;
+      }
+
+      const yearProfit = balance - yearStartBalance - yearContribution;
+      cumulativeProfit += yearProfit;
+
+      rows.push({
+        year,
+        contribution: yearContribution,
+        profit: yearProfit,
+        cumulativePrincipal,
+        cumulativeProfit,
+        totalAsset: balance
+      });
     }
 
     return rows;
