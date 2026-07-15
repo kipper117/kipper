@@ -133,5 +133,14 @@
   document.getElementById('inflationRate').value = 2;
   document.getElementById('inflationRate-range').value = 2;
 
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const body = document.body;
+    body.dataset.theme = body.dataset.theme === 'dark' ? 'light' : 'dark';
+  });
+
+  document.getElementById('input-panel-toggle').addEventListener('click', () => {
+    document.getElementById('input-panel').classList.toggle('open');
+  });
+
   recalculate();
 })();
