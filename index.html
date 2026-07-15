@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>복리 투자 시뮬레이터</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 <style>
 :root {
   --bg: #0f172a;
@@ -93,6 +94,7 @@ body {
   font-size: 13px;
 }
 #schedule-table td[data-editable="rate"] { cursor: text; color: var(--accent); }
+.table-hint { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
 .mobile-only { display: none; }
 
 @media (max-width: 720px) {
@@ -186,6 +188,7 @@ body {
         <canvas id="ratio-chart" height="120"></canvas>
       </section>
       <section class="table-section">
+        <p class="table-hint">"수익률(%)" 셀을 클릭해 값을 직접 수정할 수 있습니다. 손실이 난 해는 음수로 입력하세요 (예: -15).</p>
         <table id="schedule-table">
           <thead>
             <tr>
@@ -364,11 +367,20 @@ body {
         backgroundColor: ['#3b82f6', '#22c55e']
       }]
     };
+    const options = {
+      plugins: {
+        datalabels: {
+          color: '#ffffff',
+          font: { weight: 'bold' },
+          formatter: (value) => value.toLocaleString('ko-KR') + '억원'
+        }
+      }
+    };
     if (ratioChart) {
       ratioChart.data = data;
       ratioChart.update();
     } else {
-      ratioChart = new Chart(ctx, { type: 'doughnut', data });
+      ratioChart = new Chart(ctx, { type: 'doughnut', data, options, plugins: [ChartDataLabels] });
     }
   }
 

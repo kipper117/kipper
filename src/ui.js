@@ -69,11 +69,20 @@
         backgroundColor: ['#3b82f6', '#22c55e']
       }]
     };
+    const options = {
+      plugins: {
+        datalabels: {
+          color: '#ffffff',
+          font: { weight: 'bold' },
+          formatter: (value) => value.toLocaleString('ko-KR') + '억원'
+        }
+      }
+    };
     if (ratioChart) {
       ratioChart.data = data;
       ratioChart.update();
     } else {
-      ratioChart = new Chart(ctx, { type: 'doughnut', data });
+      ratioChart = new Chart(ctx, { type: 'doughnut', data, options, plugins: [ChartDataLabels] });
     }
   }
 
